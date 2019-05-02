@@ -1,0 +1,188 @@
+version: '3.2'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    volumes:
+    - .:/opt
+    command: /gunicorn.sh
+    ports:
+    - 11080:8080
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.2
+        aliases: [api]
+
+  computed:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_DB=sources
+      - POSTGRES_USER=sources
+      - POSTGRES_PASSWORD=sources
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/sources/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/sources/shared:/opt/shared
+      - ./mounts/sources/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.3
+        aliases: [computed]
+
+  isobase:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_DB=isobase
+      - POSTGRES_USER=isobase
+      - POSTGRES_PASSWORD=isobase
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/isobase/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/isobase/shared:/opt/shared
+      - ./mounts/isobase/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.4
+        aliases: [isobase]
+
+  dip:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_DB=dip
+      - POSTGRES_USER=dip
+      - POSTGRES_PASSWORD=dip
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/dip/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/dip/shared:/opt/shared
+      - ./mounts/dip/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.5
+        aliases: [dip]
+
+  intact:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_DB=intact
+      - POSTGRES_USER=intact
+      - POSTGRES_PASSWORD=intact
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/intact/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/intact/shared:/opt/shared
+      - ./mounts/intact/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.6
+        aliases: [intact]
+
+  biogrid:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_DB=biogrid
+      - POSTGRES_USER=biogrid
+      - POSTGRES_PASSWORD=biogrid
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/biogrid/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/biogrid/shared:/opt/shared
+      - ./mounts/biogrid/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.7
+        aliases: [biogrid]
+
+  mips:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_DB=mips
+      - POSTGRES_USER=mips
+      - POSTGRES_PASSWORD=mips
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/mips/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/mips/shared:/opt/shared
+      - ./mounts/mips/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.8
+        aliases: [mips]
+
+  isobase:
+    image: postgres:11.2
+    environment:
+      - POSTGRES_DB=isobase
+      - POSTGRES_USER=isobase
+      - POSTGRES_PASSWORD=isobase
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/isobase/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/isobase/shared:/opt/shared
+      - ./mounts/isobase/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.9
+        aliases: [isobase]
+
+  stringdb:
+    image: postgres:11.2
+    restart: always
+    shm_size: 1G
+    stop_grace_period: 5m
+    environment:
+      - POSTGRES_DB=stringdb
+      - POSTGRES_USER=stringdb
+      - POSTGRES_PASSWORD=stringdb
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/stringdb/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/stringdb/shared:/opt/shared
+      - ./mounts/stringdb/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.10
+        aliases: [stringdb]
+
+  stringdb-virus:
+    image: postgres:11.2
+    restart: always
+    stop_grace_period: 5m
+    environment:
+      - POSTGRES_DB=stringdb-virus
+      - POSTGRES_USER=stringdb-virus
+      - POSTGRES_PASSWORD=stringdb-virus
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./mounts/stringdb-virus/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/stringdb-virus/shared:/opt/shared
+      - ./mounts/stringdb-virus/logs:/opt/logs
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.11
+        aliases: [stringdb-virus]
+
+  geneontology:
+    image: mysql:8.0.11
+    restart: always
+    environment:
+      MYSQL_DATABASE: geneontology
+      MYSQL_USER: geneontology
+      MYSQL_PASSWORD: geneontology
+      MYSQL_ROOT_PASSWORD: dba3c752-4671-4bb4-9755-c2b1b1a631c0
+    command: --bind-address=0.0.0.0 --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./mounts/geneontology/mysql-data:/var/lib/mysql
+      - ./mounts/geneontology/shared:/opt/shared
+    networks:
+      sources-net:
+        ipv4_address: 192.20.0.12
+        aliases: [geneontology]
+
+networks:
+  sources-net:
+    ipam:
+      config:
+        - subnet: 192.20.0.0/24
