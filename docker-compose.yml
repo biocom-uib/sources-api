@@ -14,6 +14,17 @@ services:
       sources-net:
         ipv4_address: 192.20.0.2
         aliases: [api]
+    depends_on:
+        - computed
+        - isobase
+        - dip
+        - intact
+        - biogrid
+        - mips
+        - stringdb
+        - stringdb_virus
+        - geneontology
+
 
   computed:
     image: postgres:11.2
@@ -111,22 +122,6 @@ services:
         ipv4_address: 192.20.0.8
         aliases: [mips]
 
-  isobase:
-    image: postgres:11.2
-    environment:
-      - POSTGRES_DB=isobase
-      - POSTGRES_USER=isobase
-      - POSTGRES_PASSWORD=isobase
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - ./mounts/isobase/pgdata:/var/lib/postgresql/data/pgdata
-      - ./mounts/isobase/shared:/opt/shared
-      - ./mounts/isobase/logs:/opt/logs
-    networks:
-      sources-net:
-        ipv4_address: 192.20.0.9
-        aliases: [isobase]
-
   stringdb:
     image: postgres:11.2
     restart: always
@@ -146,23 +141,23 @@ services:
         ipv4_address: 192.20.0.10
         aliases: [stringdb]
 
-  stringdb-virus:
+  stringdb_virus:
     image: postgres:11.2
     restart: always
     stop_grace_period: 5m
     environment:
-      - POSTGRES_DB=stringdb-virus
-      - POSTGRES_USER=stringdb-virus
-      - POSTGRES_PASSWORD=stringdb-virus
+      - POSTGRES_DB=stringdb_virus
+      - POSTGRES_USER=stringdb_virus
+      - POSTGRES_PASSWORD=stringdb_virus
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - ./mounts/stringdb-virus/pgdata:/var/lib/postgresql/data/pgdata
-      - ./mounts/stringdb-virus/shared:/opt/shared
-      - ./mounts/stringdb-virus/logs:/opt/logs
+      - ./mounts/stringdb_virus/pgdata:/var/lib/postgresql/data/pgdata
+      - ./mounts/stringdb_virus/shared:/opt/shared
+      - ./mounts/stringdb_virus/logs:/opt/logs
     networks:
       sources-net:
-        ipv4_address: 192.20.0.11
-        aliases: [stringdb-virus]
+        ipv4_address: 192.20.0.13
+        aliases: [stringdb_virus]
 
   geneontology:
     image: mysql:8.0.11

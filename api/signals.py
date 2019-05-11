@@ -1,13 +1,35 @@
+import aiomysql
+import aiopg
+
 from api.config import config
 
 
-# async def create_mysql_pool(app):
-#     app['mysql_pool'] = await aiomysql.create_pool(
-#         host=config['MYSQL_HOST'], port=config['MYSQL_PORT'], user=config['MYSQL_USER'],
-#         password=config['MYSQL_PASS'], db=config['MYSQL_DB'], charset='utf8', minsize=config['MYSQL_MIN_POOL_CONN'],
-#         maxsize=config['MYSQL_MAX_POOL_CONN'], autocommit=False, pool_recycle=config['MYSQL_POOL_RECYCLE'])
+async def create_psql_pool(app):
+    app['psql_pool'] = {database: await create_pool_psql(database) for database in config['DATABASES']['psql']}
 
 
-# async def dispose_mysql_pool(app):
-#     app['mysql_pool'].close()
-#     await app['mysql_pool'].wait_closed()
+async def create_pool_psql(database):
+    return await aiopg.create_pool(dbname=config[database]['db'], user=config[database]['user'], password=config[database]['pass'],
+                                   host=config[database]['host'], port=config[database]['port'], minsize=1,
+                                   maxsize=config[database]['max_pool_conn'])
+
+async def dispose_psql_pool(app):
+    for connection in app['psql_pool'].values():
+        connection.close()
+        await connection.wait_closed()
+
+
+async def create_mysql_pool(app):
+    app['mysql_pool'] = {database: await create_pool_mysql(database) for database in config['DATABASES']['mysql']}
+
+
+async def create_pool_mysql(database):
+    return await aiomysql.create_pool(
+        host=config[database]['host'], port=config[database]['port'], user=config[database]['user'],
+        password=config[database]['pass'], db=config[database]['db'], charset='utf8',
+        minsize=1,  maxsize=config[database]['max_pool_conn'])
+
+async def dispose_mysql_pool(app):
+    for connection in app['mysql_pool'].values():
+        connection.close()
+        await connection.wait_closed()

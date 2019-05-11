@@ -1,16 +1,12 @@
-FROM python:3.7-alpine
+FROM python:3.7
 
 ENV PYTHONUNBUFFERED=1
 
-
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
-    && apk add --no-cache --virtual .build-deps gcc g++ make libffi-dev openssl-dev linux-headers
 
 COPY ./requirements.txt /requirements.txt
 
 RUN pip install -r requirements.txt
 
-RUN apk del .build-deps
 
 COPY ./docker/gunicorn.sh /gunicorn.sh
 RUN sed -i 's/\r//' /gunicorn.sh

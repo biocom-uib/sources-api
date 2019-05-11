@@ -1,10 +1,5 @@
 #!/bin/sh
 
-set -o errexit
-set -o pipefail
-set -o nounset
-
-
 /usr/local/bin/gunicorn api.server:app \
     --chdir=/opt \
     -w 1 \

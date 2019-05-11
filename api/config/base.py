@@ -25,8 +25,91 @@ DEBUG = env.bool('DEBUG', default=False)
 
 # DATABASES
 # -----------------------------------------------------------------------------
-MONGODB_DSN = env('MONGODB_DSN',
-                  default='mongodb://airamleib:airamleib@mongo/airam_leib')
+DATABASES = {
+    'psql': ['computed', 'isobase', 'dip', 'intact', 'biogrid', 'mips', 'stringdb', 'stringdb_virus'],
+    'mysql': ['geneontology']
+}
+
+computed = {
+    'db': 'sources',
+    'user':'sources',
+    'pass':'sources',
+    'host':'computed',
+    'port':5432,
+    'max_pool_conn': 50,
+}
+
+isobase =  {
+    'db':'isobase',
+    'user':'isobase',
+    'pass':'isobase',
+    'host':'isobase',
+    'port': 5432,
+    'max_pool_conn': 50,
+}
+
+dip =  {
+    'db':'dip',
+    'user':'dip',
+    'pass':'dip',
+    'host':'dip',
+    'port': 5432,
+    'max_pool_conn': 50,
+}
+
+intact =  {
+    'db':'intact',
+    'user':'intact',
+    'pass':'intact',
+    'host':'intact',
+    'port': 5432,
+    'max_pool_conn': 50,
+}
+
+biogrid =  {
+    'db':'biogrid',
+    'user':'biogrid',
+    'pass':'biogrid',
+    'host':'biogrid',
+    'port': 5432,
+    'max_pool_conn': 50,
+}
+
+mips =  {
+    'db':'mips',
+    'user':'mips',
+    'pass':'mips',
+    'host':'mips',
+    'port': 5432,
+    'max_pool_conn': 50,
+}
+
+stringdb =  {
+    'db':'stringdb',
+    'user':'stringdb',
+    'pass':'stringdb',
+    'host':'stringdb',
+    'port': 5432,
+    'max_pool_conn': 50,
+}
+
+stringdb_virus =  {
+    'db':'stringdb_virus',
+    'user':'stringdb_virus',
+    'pass':'stringdb_virus',
+    'host':'stringdb_virus',
+    'port': 5432,
+    'max_pool_conn': 50,
+}
+
+geneontology =  {
+    'db':'geneontology',
+    'user':'geneontology',
+    'pass':'geneontology',
+    'host':'geneontology',
+    'port': 3306,
+    'max_pool_conn': 50,
+}
 
 
 # LOGGING
@@ -71,4 +154,3 @@ LOGGING = {
 }
 ACCESS_LOG_FORMAT = env('ACCESS_LOG_FORMAT', '"%r" %s %b %Tf')
 TRACING_ENABLED = env.bool('TRACING_ENABLED', False)
-SENTRY_DSN = "https://1a2fa23db22a4ea9be27ca968bcc4419@sentry.io/1422329"

@@ -3,9 +3,14 @@ uvloop==0.11.2
 gunicorn==19.9.0
 aiohttp==3.4.4
 
+#Database
+aiomysql==0.0.20
+aiopg==0.16.0
+
 # Utils
 aiotask-context==0.6.0
 environs==4.0.0
+msgpack==0.6.1
 
 # Testing
 black==19.3b

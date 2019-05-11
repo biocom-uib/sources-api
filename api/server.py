@@ -5,9 +5,9 @@ import aiotask_context as context
 from aiohttp import web
 
 from api.config import config
-from api.middlewares import correlation_id_middleware, error_middleware, json_middleware
+from api.middlewares import correlation_id_middleware, json_middleware, database_middleware#, error_middleware
 from api.routes import routes
-from api.signals import create_sentry, create_mongo
+from api.signals import create_psql_pool, create_mysql_pool, dispose_psql_pool, dispose_mysql_pool
 
 
 def setup_routes(app):
@@ -18,22 +18,23 @@ def setup_routes(app):
 def setup_middlewares(app):
     middlewares = [
         correlation_id_middleware,
-        error_middleware,
+        # error_middleware,
         json_middleware,
+        database_middleware
     ]
     for middleware in middlewares:
         app.middlewares.append(middleware)
 
 
 def on_startup_signal(app):
-    # TODO add startup database
-    app.on_startup.append(create_sentry)
-    app.on_startup.append(create_mongo)
+    app.on_startup.append(create_psql_pool)
+    app.on_startup.append(create_mysql_pool)
 
 
 def on_cleanup_signal(app):
-    # TODO add cleanup database
-    pass
+    app.on_cleanup.append(dispose_psql_pool)
+    app.on_cleanup.append(dispose_mysql_pool)
+
 
 
 def init_app():

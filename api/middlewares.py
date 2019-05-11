@@ -15,22 +15,22 @@ from api.utils import timing
 logger = logging.getLogger(__name__)
 
 
-@web.middleware
-async def error_middleware(request, handler):
-    try:
-        return await handler(request)
-    except web.HTTPException as e:
-        return web.json_response(body=str(e), status=e.status_code)
-    except ClientException as e:
-        body = {'code': e.code, 'message': e.message, 'text': e.text}
-        return web.json_response(body=json_dumps(body), status=e.status_code)
-    except asyncio.CancelledError:  # pragma: nocover
-        # do not mute asyncio.CancelledError
-        raise
-    except Exception as e:  # pylint: disable=broad-except
-        if config['DEBUG']:
-            raise
-        return web.json_response(body=str(e), status=500)
+# @web.middleware
+# async def error_middleware(request, handler):
+#     try:
+#         return await handler(request)
+#     except web.HTTPException as e:
+#         return web.json_response(body=str(e), status=e.status_code)
+#     except ClientException as e:
+#         body = {'code': e.code, 'message': e.message, 'text': e.text}
+#         return web.json_response(body=json_dumps(body), status=e.status_code)
+#     except asyncio.CancelledError:  # pragma: nocover
+#         # do not mute asyncio.CancelledError
+#         raise
+#     except Exception as e:  # pylint: disable=broad-except
+#         if config['DEBUG']:
+#             raise
+#         return web.json_response(body=str(e), status=500)
 
 
 @web.middleware
@@ -49,5 +49,23 @@ async def correlation_id_middleware(request, handler):
     correlation_id = request.headers.get("X-Correlation-Id", str(uuid.uuid4()))
     context.set("X-Correlation-Id", correlation_id)
     response = await handler(request)
-    response.headers["X-Correlation-Id"] = context.get("X-Correlation-Id")
+    # response.headers["X-Correlation-Id"] = context.get("X-Correlation-Id")
     return response
+
+@web.middleware
+async def database_middleware(request, handler):
+    path = request.path.split('/')
+    if path[1] != 'db':
+        return await handler(request)
+    database = path[2]
+    if database in config['DATABASES']['mysql']:
+        master_pool = request.app['mysql_pool'][database]
+        async with master_pool.acquire() as master_connection:
+            request.db = master_connection
+            return await handler(request)
+    if database in config['DATABASES']['psql']:
+        master_pool = request.app['psql_pool'][database]
+        async with master_pool.acquire() as master_connection:
+            request.db = master_connection
+            return await handler(request)
+    return await handler(request)

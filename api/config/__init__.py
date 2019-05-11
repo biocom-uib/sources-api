@@ -10,7 +10,7 @@ def _get_config():
     try:
         module = importlib.import_module(f'api.config.base')
         settings = {k: v for k, v in vars(module).items(
-        ) if not k.startswith('_') and k.isupper()}
+        ) if not k.startswith('_')}
         return settings
     except Exception:
         sys.stderr.write('Failed to read config file: config.base.py')
