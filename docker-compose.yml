@@ -14,6 +14,9 @@ services:
       sources-net:
         ipv4_address: 192.20.0.2
         aliases: [api]
+      stringdb-net:
+      geneontology-net:
+
     depends_on:
         - computed
         - isobase
@@ -21,9 +24,9 @@ services:
         - intact
         - biogrid
         - mips
-        - stringdb
-        - stringdb_virus
-        - geneontology
+        #- stringdb
+        #- stringdb_virus
+        #- geneontology
 
 
   computed:
@@ -122,62 +125,66 @@ services:
         ipv4_address: 192.20.0.8
         aliases: [mips]
 
-  stringdb:
-    image: postgres:11.2
-    restart: always
-    shm_size: 1G
-    stop_grace_period: 5m
-    environment:
-      - POSTGRES_DB=stringdb
-      - POSTGRES_USER=stringdb
-      - POSTGRES_PASSWORD=stringdb
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - ./mounts/stringdb/pgdata:/var/lib/postgresql/data/pgdata
-      - ./mounts/stringdb/shared:/opt/shared
-      - ./mounts/stringdb/logs:/opt/logs
-    networks:
-      sources-net:
-        ipv4_address: 192.20.0.10
-        aliases: [stringdb]
+  #stringdb:
+    #image: postgres:11.2
+    #restart: always
+    #shm_size: 1G
+    #stop_grace_period: 5m
+    #environment:
+      #- POSTGRES_DB=stringdb
+      #- POSTGRES_USER=stringdb
+      #- POSTGRES_PASSWORD=stringdb
+      #- PGDATA=/var/lib/postgresql/data/pgdata
+    #volumes:
+      #- ./mounts/stringdb/pgdata:/var/lib/postgresql/data/pgdata
+      #- ./mounts/stringdb/shared:/opt/shared
+      #- ./mounts/stringdb/logs:/opt/logs
+    #networks:
+      #sources-net:
+        #ipv4_address: 192.20.0.10
+        #aliases: [stringdb]
 
-  stringdb_virus:
-    image: postgres:11.2
-    restart: always
-    stop_grace_period: 5m
-    environment:
-      - POSTGRES_DB=stringdb_virus
-      - POSTGRES_USER=stringdb_virus
-      - POSTGRES_PASSWORD=stringdb_virus
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - ./mounts/stringdb_virus/pgdata:/var/lib/postgresql/data/pgdata
-      - ./mounts/stringdb_virus/shared:/opt/shared
-      - ./mounts/stringdb_virus/logs:/opt/logs
-    networks:
-      sources-net:
-        ipv4_address: 192.20.0.13
-        aliases: [stringdb_virus]
+  #stringdb_virus:
+    #image: postgres:11.2
+    #restart: always
+    #stop_grace_period: 5m
+    #environment:
+      #- POSTGRES_DB=stringdb_virus
+      #- POSTGRES_USER=stringdb_virus
+      #- POSTGRES_PASSWORD=stringdb_virus
+      #- PGDATA=/var/lib/postgresql/data/pgdata
+    #volumes:
+      #- ./mounts/stringdb_virus/pgdata:/var/lib/postgresql/data/pgdata
+      #- ./mounts/stringdb_virus/shared:/opt/shared
+      #- ./mounts/stringdb_virus/logs:/opt/logs
+    #networks:
+      #sources-net:
+        #ipv4_address: 192.20.0.13
+        #aliases: [stringdb_virus]
 
-  geneontology:
-    image: mysql:8.0.11
-    restart: always
-    environment:
-      MYSQL_DATABASE: geneontology
-      MYSQL_USER: geneontology
-      MYSQL_PASSWORD: geneontology
-      MYSQL_ROOT_PASSWORD: dba3c752-4671-4bb4-9755-c2b1b1a631c0
-    command: --bind-address=0.0.0.0 --default-authentication-plugin=mysql_native_password
-    volumes:
-      - ./mounts/geneontology/mysql-data:/var/lib/mysql
-      - ./mounts/geneontology/shared:/opt/shared
-    networks:
-      sources-net:
-        ipv4_address: 192.20.0.12
-        aliases: [geneontology]
+  #geneontology:
+    #image: mysql:8.0.11
+    #restart: always
+    #environment:
+      #MYSQL_DATABASE: geneontology
+      #MYSQL_USER: geneontology
+      #MYSQL_PASSWORD: geneontology
+      #MYSQL_ROOT_PASSWORD: dba3c752-4671-4bb4-9755-c2b1b1a631c0
+    #command: --bind-address=0.0.0.0 --default-authentication-plugin=mysql_native_password
+    #volumes:
+      #- ./mounts/geneontology/mysql-data:/var/lib/mysql
+      #- ./mounts/geneontology/shared:/opt/shared
+    #networks:
+      #sources-net:
+        #ipv4_address: 192.20.0.12
+        #aliases: [geneontology]
 
 networks:
   sources-net:
     ipam:
       config:
         - subnet: 192.20.0.0/24
+  stringdb-net:
+    external: true
+  geneontology-net:
+    external: true
