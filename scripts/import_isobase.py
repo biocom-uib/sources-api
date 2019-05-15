@@ -46,7 +46,7 @@ async def create_species_mapping(db_connection):
     await db_connection.execute(insert_statment)
     
 
-def write_edges(db_connection, species_id, rows):
+async def write_edges(db_connection, species_id, rows):
     values = ','.join(f"({species_id}, {row['INTERACTOR_A']}, {row['INTERACTOR_B']})" for row in rows)
     insert_statment = f"INSERT INTO networks (species_id, protein_1, protein_2) VALUES {values};"
     await db_connection.execute(insert_statment)
@@ -58,7 +58,7 @@ async def main():
 
     await create_table(db_connection)
     await create_species_mapping(db_connection)
-    [write_edges(db_connection, mapping[species]['id'], get_edges(files[species])) for species in SPECIES_LIST]
+    [await write_edges(db_connection, mapping[species]['id'], get_edges(files[species])) for species in SPECIES_LIST]
 
 if __name__ == 'main':
     asyncio.run(main())
