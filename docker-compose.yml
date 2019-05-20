@@ -1,19 +1,19 @@
 version: '3.2'
 
 services:
-  api:
+  sources-api:
     build:
-      context: .
-      dockerfile: ./docker/Dockerfile
+      context: ./docker
+      dockerfile: ./Dockerfile
     volumes:
-    - .:/opt
+    - ./api:/opt/api
     command: /gunicorn.sh
     ports:
     - 11080:8080
     networks:
       sources-net:
         ipv4_address: 192.20.0.2
-        aliases: [api]
+        aliases: [sources-api]
       stringdb-net:
       geneontology-net:
 
@@ -181,9 +181,7 @@ services:
 
 networks:
   sources-net:
-    ipam:
-      config:
-        - subnet: 192.20.0.0/24
+    external: true
   stringdb-net:
     external: true
   geneontology-net:
