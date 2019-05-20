@@ -41,7 +41,7 @@ def init_app():
     loop = asyncio.get_event_loop()
     loop.set_task_factory(context.task_factory)
     logging.config.dictConfig(config['LOGGING'])
-    app = web.Application()
+    app = web.Application(handler_args={'keepalive_timeout': None})
     setup_routes(app)
     setup_middlewares(app)
     on_startup_signal(app)
