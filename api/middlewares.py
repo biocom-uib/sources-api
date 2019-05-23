@@ -3,7 +3,6 @@ import logging
 import uuid
 from json import dumps as json_dumps
 from json.decoder import JSONDecodeError
-from traceback import format_exc
 
 import aiotask_context as context
 from aiohttp import web
