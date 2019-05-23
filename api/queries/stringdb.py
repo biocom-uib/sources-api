@@ -132,16 +132,13 @@ class StringDB(object):
             wheres = []
 
             for score_type, threshold in score_thresholds.items():
-                if score_type in StringDB.EVIDENCE_SCORE_TYPES and isinstance(threshold, int):
-                    score_type_id = StringDB.EVIDENCE_SCORE_TYPES[score_type]
-                    placeholders[score_type] = threshold
+                score_type_id = StringDB.EVIDENCE_SCORE_TYPES[score_type]
+                placeholders[score_type] = threshold
 
-                    wheres.append(
-                        sql.SQL('(score_type = {0} and score >= {1})').format(
-                            sql.Literal(score_type_id),
-                            sql.Placeholder(name=score_type)))
-                else:
-                    raise LookupError(f'invalid score_type/threshold pair: {score_type} >= {threshold}')
+                wheres.append(
+                    sql.SQL('(score_type = {0} and score >= {1})').format(
+                        sql.Literal(score_type_id),
+                        sql.Placeholder(name=score_type)))
 
             query = sql.SQL("""
                 with indexed as (
@@ -155,7 +152,7 @@ class StringDB(object):
                   where
                     node_type_b = {0}
                 )
-                select
+                select distinct
                   node_id_a,
                   node_id_b
                 from
