@@ -5,7 +5,7 @@ import aiotask_context as context
 from aiohttp import web
 
 from api.config import config
-from api.middlewares import correlation_id_middleware, json_middleware, database_middleware#, error_middleware
+from api.middlewares import correlation_id_middleware, json_middleware, database_middleware, error_middleware
 from api.routes import routes
 from api.signals import create_psql_pool, create_mysql_pool, dispose_psql_pool, dispose_mysql_pool
 
@@ -18,7 +18,7 @@ def setup_routes(app):
 def setup_middlewares(app):
     middlewares = [
         correlation_id_middleware,
-        # error_middleware,
+        error_middleware,
         json_middleware,
         database_middleware
     ]

@@ -6,10 +6,10 @@ routes_ping = [
 
 ]
 stringdb_routes = [
-   ['GET', '/db/stringdb/items/proteins', stringdb.get_proteins],
-   ['POST', '/db/stringdb/network/edges/select', stringdb.get_network_edges],
-   ['POST', '/db/stringdb/bitscore/select', stringdb.get_bitscore],
-   ['POST', '/db/stringdb/go/select', stringdb.get_go],
+   ['POST', '/db/stringdb/items/proteins/select', stringdb.get_proteins],
+   ['POST', '/db/stringdb/network/edges/select',  stringdb.get_network_edges],
+   ['POST', '/db/stringdb/bitscore/select',       stringdb.get_bitscore],
+   ['POST', '/db/stringdb/go/select',             stringdb.get_go],
 
 ]
 

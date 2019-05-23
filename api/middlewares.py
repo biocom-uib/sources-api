@@ -3,34 +3,40 @@ import logging
 import uuid
 from json import dumps as json_dumps
 from json.decoder import JSONDecodeError
+from traceback import format_exc
 
 import aiotask_context as context
 from aiohttp import web
 
 from api.config import config
-from api.exceptions import ClientException
+from api.exceptions import ApiException, ErrorCodes
 from api.utils import timing
 
 
 logger = logging.getLogger(__name__)
 
 
-# @web.middleware
-# async def error_middleware(request, handler):
-#     try:
-#         return await handler(request)
-#     except web.HTTPException as e:
-#         return web.json_response(body=str(e), status=e.status_code)
-#     except ClientException as e:
-#         body = {'code': e.code, 'message': e.message, 'text': e.text}
-#         return web.json_response(body=json_dumps(body), status=e.status_code)
-#     except asyncio.CancelledError:  # pragma: nocover
-#         # do not mute asyncio.CancelledError
-#         raise
-#     except Exception as e:  # pylint: disable=broad-except
-#         if config['DEBUG']:
-#             raise
-#         return web.json_response(body=str(e), status=500)
+@web.middleware
+async def error_middleware(request, handler):
+    try:
+        return await handler(request)
+
+    except ApiException as e:
+        data = {'ok': False, 'code': e.code, 'message': e.message, 'description': e.description}
+        return web.json_response(data=data, status=e.status)
+
+    except web.HTTPException as e:
+        data = {'ok': False, 'code': ErrorCodes.UNKNOWN, 'message': f"Unknown HTTP exception was raised: {e}", 'description': e.text}
+        return web.json_response(data=data, status=e.status)
+
+    except asyncio.CancelledError:  # pragma: nocover
+        # do not mute asyncio.CancelledError
+        raise
+
+    except Exception as e:  # pylint: disable=broad-except
+        logger.exception('Unknown exception was raised')
+        data = {'ok': False, 'code': ErrorCodes.UNKNOWN, 'message': f"Unknown exception was raised: {e}", 'description': None}
+        return web.json_response(data=data, status=500)
 
 
 @web.middleware
@@ -51,6 +57,7 @@ async def correlation_id_middleware(request, handler):
     response = await handler(request)
     # response.headers["X-Correlation-Id"] = context.get("X-Correlation-Id")
     return response
+
 
 @web.middleware
 async def database_middleware(request, handler):
