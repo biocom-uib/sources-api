@@ -105,11 +105,15 @@ def raise_bad_request(code, message, description=None, reason=None, headers=None
     raise_http_error(web.HTTPBadRequest, code, message, description=description, reason=reason, headers=headers)
 
 
-def ensure_key_as(cls, key, dic):
+def ensure_key(key, dic):
     if key not in dic:
         raise_bad_request(ErrorCodes.MISSING_PARAMETER, f"missing field \"{key}\"")
+    else:
+        return dic[key]
 
-    val = dic[key]
+
+def ensure_key_as(cls, key, dic):
+    val = ensure_key(key, dic)
 
     if not isinstance(val, cls):
         raise_bad_request(ErrorCodes.TYPE_ERROR, f"{key} should be of type {cls.__name__}")
@@ -118,13 +122,18 @@ def ensure_key_as(cls, key, dic):
 
 
 def ensure_list_of(cls, key, dic):
-    if key not in dic:
-        raise_bad_request(ErrorCodes.MISSING_PARAMETER, f"missing field \"{key}\"")
-
-    xs = dic[key]
+    xs = ensure_key(key, dic)
 
     if not isinstance(xs, list) or not all(isinstance(x, cls) for x in xs):
         raise_bad_request(ErrorCodes.TYPE_ERROR, f"{key} should be a list of {cls.__name__}")
 
     return xs
 
+
+def ensure_key_parse_int(key, dic):
+    s = ensure_key(key, dic)
+
+    try:
+        return int(s)
+    except Exception:
+        raise_bad_request(ErrorCodes.TYPE_ERROR, f"{key} should be an integer")

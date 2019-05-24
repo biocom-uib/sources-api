@@ -6,6 +6,15 @@ import psycopg2.sql as sql
 
 
 class StringDB(object):
+    SPECIES_COLUMNS = {
+        'species_id': int,
+        'official_name': str,
+        'compact_name': str,
+        'kingdom': str,
+        'type': str,
+        'protein_count': int
+    }
+
     PROTEINS_COLUMNS = {
         'protein_id': int,
         'protein_external_id': str,
@@ -80,24 +89,35 @@ class StringDB(object):
         else:
             return self.conn.cursor()
 
-
-    async def get_proteins(self, columns, filters):
+    async def _select_with_filters(self, table_sql, columns, filters):
         query_filters = []
         placeholders = {}
 
-        for filter_col, filter_vals in filters.items():
-            query_filters.append(sql.SQL('{0} in {1}').format(sql.Identifier(filter_col), sql.Placeholder(name=filter_col)))
-            placeholders[filter_col] = tuple(filter_vals)
+        if len(filters) >= 0:
+            for filter_col, filter_vals in filters.items():
+                query_filters.append(sql.SQL('{0} in {1}').format(sql.Identifier(filter_col), sql.Placeholder(name=filter_col)))
+                placeholders[filter_col] = tuple(filter_vals)
+        else:
+            query_filters.append(sql.SQL('true'))
 
-        query = sql.SQL('select {0} from items.proteins where true and {1}').format(
-            sql.SQL(', ').join(map(sql.Identifier, columns)),
-            sql.SQL(' and ').join(query_filters))
+        query = sql.SQL('select {columns} from {table} where {where}').format(
+            columns = sql.SQL(', ').join(map(sql.Identifier, columns)),
+            table = table_sql,
+            where = sql.SQL(' and ').join(query_filters))
 
         async with self.cursor() as cursor:
             await cursor.execute(query, placeholders)
             rows = await cursor.fetchall()
 
         return pd.DataFrame(rows, columns=columns)
+
+
+    async def get_species(self, columns, filters):
+        return await self._select_with_filters(sql.SQL('items.species'), columns, filters)
+
+
+    async def get_proteins(self, columns, filters):
+        return await self._select_with_filters(sql.SQL('items.proteins'), columns, filters)
 
 
     # async def get_protein_sequences(self, filters):
@@ -121,12 +141,72 @@ class StringDB(object):
     #     return pd.DataFrame(rows, columns=['protein_id', 'sequence'])
 
 
+    async def get_weighted_network(self, species_id, score_type, threshold):
+        placeholders = {'species_id': species_id, 'threshold': threshold}
+
+        if score_type == 'combined_score':
+            query = sql.SQL("""
+                select
+                  node_id_a,
+                  node_id_b,
+                  combined_score
+                from
+                  network.node_node_links
+                where
+                  species_id = {species_id}
+                  and
+                  combined_score >= {threshold}
+                """).format(
+                    species_id = Placeholder(name='species_id'),
+                    threshold = Placeholder(name='threshold'))
+
+        else:
+            score_type_id = StringDB.EVIDENCE_SCORE_TYPES[score_type]
+            placeholders['score_type_id'] = score_type_id
+
+            query = sql.SQL("""
+                with indexed as (
+                  select
+                    node_id_a,
+                    node_id_b,
+                    unnest(evidence_scores[:][1:1]) score_type,
+                    unnest(evidence_scores[:][2:2]) score
+                  from
+                    network.node_node_links
+                  where
+                    node_type_b = {species_id}
+                )
+                select
+                  node_id_a,
+                  node_id_b,
+                  score as {score_type}
+                from
+                  indexed
+                where
+                  score_type = {score_type_id}
+                  and
+                  score >= {threshold}
+                """).format(
+                    species_id = sql.Placeholder(name='species_id'),
+                    threshold = sql.Placeholder(name='threshold'),
+                    score_type = sql.Identifier(score_type),
+                    score_type_id = sql.Placeholder(name='score_type_id'))
+
+
+        async with self.cursor() as cursor:
+            await cursor.execute(query, placeholders)
+            edges = await cursor.fetchall()
+
+        return pd.DataFrame(edges, columns=['node_id_a', 'node_id_b', score_type])
+
+
+
     async def get_network(self, species_id, score_thresholds):
         placeholders = {'species_id' : species_id}
 
         if not score_thresholds:
-            query = sql.SQL('select node_id_a, node_id_b from items.node_node_links where node_type_b = {0}').format(
-                sql.Placeholder(name='species_id'))
+            query = sql.SQL('select node_id_a, node_id_b from items.node_node_links where node_type_b = {species_id}').format(
+                species_id = sql.Placeholder(name='species_id'))
 
         else:
             wheres = []
