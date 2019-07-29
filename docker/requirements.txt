@@ -11,6 +11,8 @@ aiopg==0.16.0
 aiotask-context==0.6.0
 environs==4.0.0
 msgpack==0.6.1
+numpy==1.16.2
+pandas==0.24.2
 
 # Testing
 black==19.3b

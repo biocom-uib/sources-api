@@ -8,7 +8,7 @@ COPY ./requirements.txt /requirements.txt
 RUN pip install -r requirements.txt
 
 
-COPY ./docker/gunicorn.sh /gunicorn.sh
+COPY ./gunicorn.sh /gunicorn.sh
 RUN sed -i 's/\r//' /gunicorn.sh
 RUN chmod +x /gunicorn.sh
 

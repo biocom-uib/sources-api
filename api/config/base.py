@@ -95,9 +95,9 @@ stringdb =  {
 
 stringdb_virus =  {
     'db':'stringdb_virus',
-    'user':'stringdb_virus',
-    'pass':'stringdb_virus',
-    'host':'stringdb_virus',
+    'user':'helen',
+    'pass':'stringdb',
+    'host':'stringdb-virus',
     'port': 5432,
     'max_pool_conn': 50,
 }
