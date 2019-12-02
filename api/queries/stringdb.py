@@ -26,6 +26,12 @@ class StringDB(object):
         # 'annotation_word_vectors':
     }
 
+    PROTEINS_SEQUENCES_COLUMNS = {
+        'protein_id': int,
+        'species_id': int,
+        'sequence': str
+    }
+
     EVIDENCE_SCORE_TYPES = {
         'equiv_nscore':                    1,
         'equiv_nscore_transferred':        2,
@@ -101,7 +107,8 @@ class StringDB(object):
             query_filters.append(sql.SQL('true'))
 
         query = sql.SQL('select {columns} from {table} where {where}').format(
-            columns = sql.SQL(', ').join(map(sql.Identifier, columns)),
+            # column names are already checked at the view
+            columns = sql.SQL(', ').join(map(sql.SQL, columns)),
             table = table_sql,
             where = sql.SQL(' and ').join(query_filters))
 
@@ -119,6 +126,16 @@ class StringDB(object):
     async def get_proteins(self, columns, filters):
         return await self._select_with_filters(sql.SQL('items.proteins'), columns, filters)
 
+
+    async def get_proteins_sequences(self, columns, filters):
+        table_sql = sql.SQL('items.proteins_sequences s inner join items.proteins p on s.protein_id = p.protein_id')
+
+        replace_protein_id = lambda col: col if col != 'protein_id' else 'p.protein_id'
+        columns = [replace_protein_id(col) for col in columns]
+        filters = {replace_protein_id(col): pred for col, pred in filters.items()}
+
+        df = await self._select_with_filters(table_sql, columns, filters)
+        return df.rename({'p.protein_id': 'protein_id'}, axis='columns')
 
     # async def get_protein_sequences(self, filters):
     #     proteins = Table('proteins', schema='items')

@@ -79,6 +79,12 @@ async def select_proteins(request):
     return dataframe_response(request, df)
 
 
+async def select_proteins_sequences(request):
+    df = await _select_columns_with_filters(request, StringDB.PROTEINS_SEQUENCES_COLUMNS, StringDB.get_proteins_sequences)
+
+    return dataframe_response(request, df)
+
+
 async def get_weighted_network_edges(request):
     stringdb = StringDB(pool=request.db)
 
