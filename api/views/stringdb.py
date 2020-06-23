@@ -41,18 +41,21 @@ def json_response(request, obj):
             return web.Response(body=body, content_type='application/x-msgpack')
 
 
-async def _select_columns_with_filters(request, available_columns, get):
-    stringdb = StringDB(pool=request.db)
+async def _select_columns_with_filters(request, available_columns, get, allow_empty_filters=False):
+    stringdb = StringDB(pool = await request.dbs.get_connection('stringdb'))
 
-    if request.post_json.get('columns') == '*':
+    if request.post_json.get('columns', '*') == '*':
         columns = sorted(available_columns.keys())
     else:
         columns = ensure_list_of(str, 'columns', request.post_json)
 
-    filters = ensure_key_as(dict, 'filter', request.post_json)
+    if 'filter' not in request.post_json:
+        filters = dict()
+    else:
+        filters = ensure_key_as(dict, 'filter', request.post_json)
 
-    if len(filters) == 0:
-        raise_bad_request(ErrorCodes.MISSING_PARAMETER, "no filters specified for protein search")
+    if not allow_empty_filters and len(filters) == 0:
+        raise_bad_request(ErrorCodes.MISSING_PARAMETER, "no filters specified for search")
 
     for col in columns:
         if col not in available_columns:
@@ -68,7 +71,7 @@ async def _select_columns_with_filters(request, available_columns, get):
 
 
 async def select_species(request):
-    df = await _select_columns_with_filters(request, StringDB.SPECIES_COLUMNS, StringDB.get_species)
+    df = await _select_columns_with_filters(request, StringDB.SPECIES_COLUMNS, StringDB.get_species, allow_empty_filters=True)
 
     return dataframe_response(request, df)
 

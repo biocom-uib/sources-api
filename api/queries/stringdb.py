@@ -99,7 +99,7 @@ class StringDB(object):
         query_filters = []
         placeholders = {}
 
-        if len(filters) >= 0:
+        if len(filters) > 0:
             for filter_col, filter_vals in filters.items():
                 query_filters.append(sql.SQL('{0} in {1}').format(sql.Identifier(filter_col), sql.Placeholder(name=filter_col)))
                 placeholders[filter_col] = tuple(filter_vals)
