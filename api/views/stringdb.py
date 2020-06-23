@@ -86,7 +86,7 @@ async def select_proteins_sequences(request):
 
 
 async def get_weighted_network_edges(request):
-    stringdb = StringDB(pool=request.db)
+    stringdb = StringDB(pool = await request.dbs.get_connection('stringdb'))
 
     species_id = ensure_key_parse_int('species_id', request.rel_url.query)
     score_type = ensure_key_as(str, 'score_type', request.rel_url.query)
@@ -101,7 +101,7 @@ async def get_weighted_network_edges(request):
 
 
 async def select_network_edges(request):
-    stringdb = StringDB(pool=request.db)
+    stringdb = StringDB(pool = await request.dbs.get_connection('stringdb'))
 
     species_id = ensure_key_as(int, 'species_id', request.post_json)
     score_thresholds = ensure_key_as(dict, 'score_thresholds', request.post_json)
@@ -119,7 +119,7 @@ async def select_network_edges(request):
 
 
 async def select_bitscores(request):
-    stringdb = StringDB(pool=request.db)
+    stringdb = StringDB(pool = await request.dbs.get_connection('stringdb'))
 
     net1_species_ids = ensure_list_of(int, 'net1_species_ids', request.post_json)
     net1_protein_ids = ensure_list_of(int, 'net1_protein_ids', request.post_json)
@@ -134,7 +134,7 @@ async def select_bitscores(request):
 
 
 async def select_go_annotations(request):
-    stringdb = StringDB(pool=request.db)
+    stringdb = StringDB(pool = await request.dbs.get_connection('stringdb'))
 
     species_ids = ensure_list_of(int, 'species_ids', request.post_json)
     go_mapping = await stringdb.get_ontology_mapping(species_ids)

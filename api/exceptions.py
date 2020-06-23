@@ -7,6 +7,7 @@ class ErrorCodes:
     BAD_KEY = 2
     TYPE_ERROR = 3
     MISSING_PARAMETER = 4
+    RESOURCE_UNAVAILABLE = 5
 
 
 # do not raise or inherit directly, assume it also extends some HTTPException

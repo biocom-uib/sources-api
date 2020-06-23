@@ -8,6 +8,7 @@ import aiotask_context as context
 from aiohttp import web
 
 from api.config import config
+from api.databases import DBConnections
 from api.exceptions import ApiException, ErrorCodes
 from api.utils import timing
 
@@ -60,18 +61,6 @@ async def correlation_id_middleware(request, handler):
 
 @web.middleware
 async def database_middleware(request, handler):
-    path = request.path.split('/')
-    if path[1] != 'db':
+    async with DBConnections(request.app) as dbs:
+        request.dbs = dbs
         return await handler(request)
-    database = path[2]
-    if database in config['DATABASES']['mysql']:
-        master_pool = request.app['mysql_pool'][database]
-        async with master_pool.acquire() as master_connection:
-            request.db = master_connection
-            return await handler(request)
-    if database in config['DATABASES']['psql']:
-        master_pool = request.app['psql_pool'][database]
-        async with master_pool.acquire() as master_connection:
-            request.db = master_connection
-            return await handler(request)
-    return await handler(request)
