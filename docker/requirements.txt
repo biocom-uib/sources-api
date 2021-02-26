@@ -1,7 +1,7 @@
 # Server base libraries
 uvloop==0.11.2
 gunicorn==19.9.0
-aiohttp==3.4.4
+aiohttp==3.7.4
 
 #Database
 aiomysql==0.0.20
