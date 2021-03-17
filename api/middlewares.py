@@ -23,10 +23,12 @@ async def error_middleware(request, handler):
 
     except ApiException as e:
         data = {'ok': False, 'code': e.code, 'message': e.message, 'description': e.description}
+        logger.info(f'error_middleware: caught APIException, response body: {data}')
         return web.json_response(data=data, status=e.status)
 
     except web.HTTPException as e:
         data = {'ok': False, 'code': ErrorCodes.UNKNOWN, 'message': f"Unknown HTTP exception was raised: {e}", 'description': e.text}
+        logger.info(f'error_middleware: caught HTTPException, response body: {data}')
         return web.json_response(data=data, status=e.status)
 
     except asyncio.CancelledError:  # pragma: nocover
