@@ -101,8 +101,11 @@ class StringDB(object):
 
         if len(filters) > 0:
             for filter_col, filter_vals in filters.items():
-                query_filters.append(sql.SQL('{0} in {1}').format(sql.Identifier(filter_col), sql.Placeholder(name=filter_col)))
-                placeholders[filter_col] = tuple(filter_vals)
+                if len(filter_vals) != 0:
+                    query_filters.append(sql.SQL('{0} in {1}').format(sql.Identifier(filter_col), sql.Placeholder(name=filter_col)))
+                    placeholders[filter_col] = tuple(filter_vals)
+                else:
+                    query_filters.append(sql.SQL('false'))
         else:
             query_filters.append(sql.SQL('true'))
 
@@ -222,7 +225,7 @@ class StringDB(object):
         placeholders = {'species_id' : species_id}
 
         if not score_thresholds:
-            query = sql.SQL('select node_id_a, node_id_b from items.node_node_links where node_type_b = {species_id}').format(
+            query = sql.SQL('select node_id_a, node_id_b from network.node_node_links where node_type_b = {species_id}').format(
                 species_id = sql.Placeholder(name='species_id'))
 
         else:
