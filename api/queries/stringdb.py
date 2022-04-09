@@ -271,30 +271,33 @@ class StringDB(object):
 
 
     async def get_bitscore_matrix(self, net1_species_ids, net1_protein_ids, net2_species_ids, net2_protein_ids):
-        async with self.cursor() as cursor:
-            await cursor.execute("""
-                with
-                    net1_prot_ids as (select unnest(%(net1_protein_ids)s :: integer[]) net1_prot_id),
-                    net2_prot_ids as (select unnest(%(net2_protein_ids)s :: integer[]) net2_prot_id)
-                select
-                  protein_id_a, protein_id_b, bitscore
-                from
-                  homology.blast_data blast
-                where
-                  species_id_a in %(net1_species_ids)s
-                  and
-                  species_id_b in %(net2_species_ids)s
-                  and
-                  protein_id_a in (select net1_prot_id from net1_prot_ids)
-                  and
-                  protein_id_b in (select net2_prot_id from net2_prot_ids);
-                """,
-                {'net1_species_ids': tuple(net1_species_ids),
-                 'net2_species_ids': tuple(net2_species_ids),
-                 'net1_protein_ids': list(net1_protein_ids),
-                 'net2_protein_ids': list(net2_protein_ids)})
+        if net1_species_ids and net1_protein_ids and net2_species_ids and net2_protein_ids:
+            async with self.cursor() as cursor:
+                await cursor.execute("""
+                    with
+                        net1_prot_ids as (select unnest(%(net1_protein_ids)s :: integer[]) net1_prot_id),
+                        net2_prot_ids as (select unnest(%(net2_protein_ids)s :: integer[]) net2_prot_id)
+                    select
+                      protein_id_a, protein_id_b, bitscore
+                    from
+                      homology.blast_data blast
+                    where
+                      species_id_a in %(net1_species_ids)s
+                      and
+                      species_id_b in %(net2_species_ids)s
+                      and
+                      protein_id_a in (select net1_prot_id from net1_prot_ids)
+                      and
+                      protein_id_b in (select net2_prot_id from net2_prot_ids);
+                    """,
+                    {'net1_species_ids': tuple(net1_species_ids),
+                     'net2_species_ids': tuple(net2_species_ids),
+                     'net1_protein_ids': list(net1_protein_ids),
+                     'net2_protein_ids': list(net2_protein_ids)})
 
-            values = await cursor.fetchall()
+                values = await cursor.fetchall()
+        else:
+            values = []
 
         return pd.DataFrame(values, columns=['protein_id_a', 'protein_id_b', 'bitscore'])
 
